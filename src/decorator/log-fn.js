@@ -1,6 +1,9 @@
 /* eslint-disable no-console */
-export const LogFn = (type) => {
-  return (target, name, descriptor) => {
+/**
+ * this 自动指向 vm
+ */
+export const LogFn = function(type) {
+  return function(target, name, descriptor) {
     if (type === 'prod') {
       return
     }
@@ -9,12 +12,12 @@ export const LogFn = (type) => {
       t = (str) => `${str || ''} ${+new Date()}`
     }
     const method = descriptor.value
-    descriptor.value = (...args) => {
+    descriptor.value = function(...args) {
       console.groupCollapsed(`[fn] ${name}:`, t())
       console.info('(', args, ') =>')
       let result
       try {
-        result = method.apply(target, args)
+        result = method.apply(this, args)
         console.info(`成功:`, result, t())
       } catch (error) {
         console.error(`失败`, error, t())
