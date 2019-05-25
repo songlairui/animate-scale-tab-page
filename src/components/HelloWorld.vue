@@ -15,9 +15,29 @@
     <div class="tab-content" :style="contentStyle">
       <pre>Collapse: {{ collapse }}</pre>
       <pre>TabHeight: {{ tabHeight }} -</pre>
-      <pre>TabWidth: {{ tabWidth }} -</pre>
+      <pre>MetaHeight: {{ metaHeight }} -</pre>
       <pre>contentOffset: {{ contentOffset }} -</pre>
       <button @click="toggle">Change Collapse</button>
+      <div class="collapseable-area">
+        <div class="metas" ref="metas">
+          <div class="metas-bg" :style="metasBgStyle"></div>
+          <div
+            class="meta"
+            v-for="(__, idx) in tabs"
+            :class="{cur: subCur === idx}"
+            @click="subCur = idx"
+          >
+            <div class="meta-bg" :style="metasBgStyle" v-if="subCur === idx"></div>
+            <div class="extra" :style="extraStyle">{{ tabWidth[idx] }}</div>
+            <div
+              class="title"
+              :style="metaItemStyle"
+            >{{ idx.toLocaleString('zh-Hans-CN-u-nu-hanidec') }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-area" :style="scrollStyle"></div>
+      <div class="safe-area">安全留白区域</div>
     </div>
   </div>
 </template>
@@ -29,9 +49,11 @@ export default {
     return {
       tabs: ["白", "日依", "尽, 黄", "河入海流", "欲穷千里目"],
       current: "白",
+      subCur: 1,
       collapse: false,
-      tabHeight: 10,
+      tabHeight: 0,
       tabWidth: [],
+      metaHeight: 0,
       scale: 1.5
     };
   },
@@ -69,6 +91,26 @@ export default {
         width: `${width * scale}px`,
         height: `${tabHeight * scale}px`
       };
+    },
+    extraStyle() {
+      return this.collapse ? { transform: `translateY(-50%) scaleY(0)` } : {};
+    },
+    metaItemStyle() {
+      return this.collapse ? { transform: `translateY(-70%) scale(1.4)` } : {};
+    },
+    metasBgStyle() {
+      return this.collapse ? { transform: `translateY(-10%) scaleY(0.8)` } : {};
+    },
+    scrollOffset() {
+      if (this.collapse || this.currentIdx < 0) {
+        return -this.metaHeight * 0.2;
+      }
+      return 0;
+    },
+    scrollStyle() {
+      return {
+        transform: `translateY(${this.scrollOffset}px)`
+      };
     }
   },
   methods: {
@@ -104,9 +146,13 @@ export default {
     }
   },
   mounted() {
-    console.info("this", this.$refs.tabs);
-    this.tabHeight = this.$refs.tabs.offsetHeight;
-    this.tabWidth = this.$refs.tab.map(el => el.offsetWidth);
+    this.$nextTick(() => {
+      console.info("this", this.$refs.tabs);
+      this.tabHeight = this.$refs.tabs.offsetHeight;
+      this.metaHeight = this.$refs.metas.offsetHeight;
+
+      this.tabWidth = this.$refs.tab.map(el => el.offsetWidth);
+    });
   }
 };
 </script>
@@ -124,7 +170,7 @@ export default {
     position: absolute;
     z-index: 1;
     min-width: 10px;
-    height: 100%;
+    height: 40px;
     background: rgb(153, 97, 209);
     border-radius: 5px;
     top: 0;
@@ -145,5 +191,53 @@ export default {
 .tab-content {
   flex: 1;
   border: thin solid blue;
+  display: flex;
+  flex-direction: column;
+  .scroll-area {
+    background: rgba(255, 255, 255, 0.4);
+    flex: 1;
+  }
+}
+.collapseable-area {
+  padding: 3px 1em;
+  .metas {
+    display: flex;
+    justify-content: space-evenly;
+    height: 44px;
+    .meta {
+      text-align: center;
+      width: 16%;
+      z-index: 10;
+      color: darkgray;
+      div {
+        position: relative;
+        z-index: 10;
+      }
+      .meta-bg {
+        position: absolute;
+        z-index: 1;
+      }
+      &.cur {
+        color: #fff;
+      }
+    }
+  }
+  .metas,
+  .meta {
+    position: relative;
+    &-bg {
+      z-index: 1;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: #fff;
+      border-radius: 0.3em;
+    }
+  }
+  .meta-bg {
+    background: rgb(153, 97, 209);
+  }
 }
 </style>
