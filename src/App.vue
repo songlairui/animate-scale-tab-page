@@ -17,7 +17,7 @@ export default {
 
 <style lang="less">
 * {
-  transition: all 0.3s;
+  box-sizing: border-box;
   padding: 0;
   margin: 0;
 }
@@ -26,6 +26,7 @@ body {
   width: 100%;
   height: 100%;
   display: flex;
+  overflow: hidden;
 }
 html {
   background: mediumvioletred;
@@ -34,6 +35,7 @@ html {
   margin: auto;
   width: 400px;
   height: 600px;
+  padding: 0.3em 0.6em;
   border: medium solid rgb(255, 114, 114);
   background: lightpink;
   // -moz-outline-radius: 20px;

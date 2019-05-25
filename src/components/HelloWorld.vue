@@ -36,15 +36,31 @@
           </div>
         </div>
       </div>
-      <div class="scroll-area" :style="scrollStyle"></div>
+      <div class="scroll-area" :style="scrollStyle">
+        <div
+          class="scroller"
+          v-infinite-scroll="handleInfiniteOnLoad"
+          :infinite-scroll-disabled="loading"
+          :infinite-scroll-distance="10"
+          @touchmove="touchMove"
+        >
+          <div class="item" v-for="(item,idx) in list" :key="idx">{{ item }}</div>
+          <div class="item" style="height: 64px">{{loading ? 'Loading' :''}}</div>
+        </div>
+      </div>
       <div class="safe-area">安全留白区域</div>
     </div>
   </div>
 </template>
 
 <script>
+import infiniteScroll from "vue-infinite-scroll";
+
+let lastClientY = 0;
+
 export default {
   name: "Tab",
+  directives: { infiniteScroll },
   data() {
     return {
       tabs: ["白", "日依", "尽, 黄", "河入海流", "欲穷千里目"],
@@ -54,7 +70,9 @@ export default {
       tabHeight: 0,
       tabWidth: [],
       metaHeight: 0,
-      scale: 1.5
+      scale: 1.5,
+      list: [1, 2, 3, 8, 4, 5],
+      loading: false
     };
   },
   computed: {
@@ -85,11 +103,13 @@ export default {
         .reduce((a, b) => a + b, 0);
       const width = this.tabWidth[this.currentIdx];
       const scale = collapse ? 1 : this.scale;
+      const toOffsetY = ((scale - 1) / 2) * 100;
+      const scaleX = (this.tabWidth[this.currentIdx] / 10) * scale;
+      const toOffsetX = ((scaleX - 1) / 2) * 100;
+
       return {
-        left: `${left}px`,
-        top: `${"0"}px`,
-        width: `${width * scale}px`,
-        height: `${tabHeight * scale}px`
+        transform: `translate(${toOffsetX}%, ${toOffsetY}%) scale(${scaleX}, ${scale}) translateX(${left /
+          scaleX}px)`
       };
     },
     extraStyle() {
@@ -143,6 +163,29 @@ export default {
           transform: `translate(${toOffset}px, ${toOffsetY}px)`
         };
       }
+    },
+    async handleInfiniteOnLoad() {
+      if (this.loading) {
+        return;
+      }
+      this.loading = true;
+      console.group();
+      console.info("~~handleInfiniteOnLoad~~");
+      await new Promise(r => setTimeout(r, 456));
+      const length = this.list.length;
+      const nextData = Array.from({ length: 20 }).map((n, i) =>
+        (i + length).toLocaleString("zh-Hans-CN-u-nu-hanidec")
+      );
+      this.list.push(...nextData);
+      this.loading = false;
+      console.groupEnd();
+    },
+    touchMove(e) {
+      const { clientY } = e.touches[0];
+
+      this.collapse = clientY < lastClientY;
+
+      lastClientY = clientY;
     }
   },
   mounted() {
@@ -158,6 +201,18 @@ export default {
 </script>
 
 <style lang='less'>
+.tab,
+.meta,
+.metas,
+.tab-content,
+.scroll-area,
+.metas-bg,
+.bg-mark,
+.title,
+.extra,
+.meta-bg {
+  transition: transform 0.3s, color 0.3s;
+}
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -169,10 +224,10 @@ export default {
   .bg-mark {
     position: absolute;
     z-index: 1;
-    min-width: 10px;
+    width: 10px;
     height: 40px;
     background: rgb(153, 97, 209);
-    border-radius: 5px;
+    // border-radius: 5px;
     top: 0;
     left: 0;
   }
@@ -194,8 +249,26 @@ export default {
   display: flex;
   flex-direction: column;
   .scroll-area {
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
     flex: 1;
+    // display: flex;
+    // flex-direction: column;
+    overflow: hidden;
+    > * {
+      transition: none;
+    }
+    .scroller {
+      height: 100%;
+      overflow-y: auto;
+      // flex: 1;
+      background: rgba(25, 216, 98, 0.4);
+      .item {
+        height: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
   }
 }
 .collapseable-area {
