@@ -36,18 +36,15 @@
           </div>
         </div>
       </div>
-      <div class="scroll-area" :style="scrollStyle">
-        <div
-          class="scroller"
-          v-infinite-scroll="handleInfiniteOnLoad"
-          :infinite-scroll-disabled="loading"
-          :infinite-scroll-distance="10"
-          @touchmove="touchMove"
-        >
-          <div class="item" v-for="(item,idx) in list" :key="idx">{{ item }}</div>
-          <div class="item" style="height: 64px">{{loading ? 'Loading' :''}}</div>
-        </div>
-      </div>
+      <ScrollArea
+        class="scroll-area"
+        @load="handleInfiniteOnLoad"
+        :loading="loading"
+        :direction.sync="collapse"
+      >
+        <div class="item" v-for="(item,idx) in list" :key="idx">{{ item }}</div>
+        <div class="item" style="height: 64px">{{loading ? 'Loading' :''}}</div>
+      </ScrollArea>
       <div class="safe-area">安全留白区域</div>
     </div>
   </div>
@@ -55,12 +52,18 @@
 
 <script>
 import infiniteScroll from "vue-infinite-scroll";
+import { JudgeDirection } from "@/utils/JudgeDirection";
+import ScrollArea from "@/components/ScrollArea";
+import { LogFn } from "@/decorator/log-fn";
+
+const JUDGE = new JudgeDirection();
 
 let lastClientY = 0;
 
 export default {
   name: "Tab",
   directives: { infiniteScroll },
+  components: { ScrollArea },
   data() {
     return {
       tabs: ["白", "日依", "尽, 黄", "河入海流", "欲穷千里目"],
@@ -182,15 +185,12 @@ export default {
     },
     touchMove(e) {
       const { clientY } = e.touches[0];
-
-      this.collapse = clientY < lastClientY;
-
-      lastClientY = clientY;
+      JUDGE.setState(clientY);
+      this.collapse = JUDGE.direction;
     }
   },
   mounted() {
     this.$nextTick(() => {
-      console.info("this", this.$refs.tabs);
       this.tabHeight = this.$refs.tabs.offsetHeight;
       this.metaHeight = this.$refs.metas.offsetHeight;
 
@@ -251,12 +251,7 @@ export default {
   .scroll-area {
     background: rgba(255, 255, 255, 0.1);
     flex: 1;
-    // display: flex;
-    // flex-direction: column;
-    overflow: hidden;
-    > * {
-      transition: none;
-    }
+
     .scroller {
       height: 100%;
       overflow-y: auto;
