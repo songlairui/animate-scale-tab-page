@@ -1,8 +1,8 @@
 import Vue from 'vue'
-import VueVirtualScroller from 'vue-virtual-scroller'
 import App from './App.vue'
+import VueRx from 'vue-rx';
 
-Vue.use(VueVirtualScroller)
+Vue.use(VueRx);
 
 Vue.config.productionTip = false
 
