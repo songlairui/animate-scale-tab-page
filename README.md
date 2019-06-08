@@ -1,29 +1,9 @@
 # collapse-tab
 
-## Project setup
-```
-yarn install
-```
+## Steps 
 
-### Compiles and hot-reloads for development
-```
-yarn run serve
-```
-
-### Compiles and minifies for production
-```
-yarn run build
-```
-
-### Run your tests
-```
-yarn run test
-```
-
-### Lints and fixes files
-```
-yarn run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- [x] Demo 小样
+- [ ] work 作品
+    - [ ] 组件划分
+    - [ ] 关键参数
+    - [ ] 设计使用方式
